@@ -77,8 +77,7 @@ namespace LoginClient
                 if (pipeClient.IsConnected())
                 {
                     ConnectBtn.Enabled = false;
-                    pipeClient.ValidateAdminDetails(AdminUsernameTB.Text, AdminPasswordTB.Text);
-                    
+                    ValidateAdminDetails(AdminUsernameTB.Text, AdminPasswordTB.Text);
                 }
 
             } else
@@ -86,6 +85,16 @@ namespace LoginClient
                 MessageBox.Show("Connection requires the admin username and password.", "Login Error");
             }
             
+        }
+
+        private void ValidateAdminDetails(string adminUsername, string adminPassword)
+        {
+            string adminDetails = adminUsername + ',' + adminPassword;
+            ASCIIEncoding encoder = new ASCIIEncoding();
+
+            pipeClient.SendMessage(encoder.GetBytes(adminDetails));
+
+
         }
 
         private void SendBtn_Click(object sender, EventArgs e)

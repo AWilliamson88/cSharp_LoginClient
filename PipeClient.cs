@@ -191,16 +191,6 @@ namespace LoginClient
 
         }
 
-        public void ValidateAdminDetails(string adminUsername, string adminPassword)
-        {
-            string adminDetails = adminUsername + ',' + adminPassword;
-            ASCIIEncoding encoder = new ASCIIEncoding();
-
-            SendMessage(encoder.GetBytes(adminDetails));
-
-                        
-        }
-
         private void ValidationResult(byte[] result)
         {
             ASCIIEncoding encoder = new ASCIIEncoding();
@@ -212,7 +202,11 @@ namespace LoginClient
             }
             else
             {
-
+                Disconnect();
+                ServerDisconnected();
+                MessageBox.Show("Username or password incorrect.\n" +
+                    "Please check your spelling and try again.", 
+                    "Login Failure");
             }
         }
 
@@ -269,7 +263,7 @@ namespace LoginClient
                     {
                         MessageRecieved(ms.ToArray());
 
-                        if (!isAdmin)
+                        if (!IsAdmin())
                         {
                             ValidationResult(ms.ToArray());
                         }
