@@ -102,6 +102,7 @@ namespace LoginClient
             ASCIIEncoding encoder = new ASCIIEncoding();
 
             pipeClient.SendMessage(encoder.GetBytes(SendMessageTB.Text));
+            SendMessageTB.Clear();
         }
 
         private void DisconnectBtn_Click(object sender, EventArgs e)
