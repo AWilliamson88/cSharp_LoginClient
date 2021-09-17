@@ -22,6 +22,7 @@ namespace LoginClient
         private void LoginClientForm_Load(object sender, EventArgs e)
         {
             CreateNewPipeClient();
+            NeedToConnect();
         }
 
         private void CreateNewPipeClient()
@@ -30,11 +31,18 @@ namespace LoginClient
             {
                 pipeClient.MessageRecieved -= pipeClient_MessageRecieved;
                 pipeClient.ServerDisconnected -= pipeClient_ServerDisconnected;
+                pipeClient.ConnectedToServer -= pipeClient_ConnectedToServer;
             }
 
             pipeClient = new PipeClient();
             pipeClient.MessageRecieved += pipeClient_MessageRecieved;
             pipeClient.ServerDisconnected += pipeClient_ServerDisconnected;
+            pipeClient.ConnectedToServer += pipeClient_ConnectedToServer;
+        }
+
+        private void pipeClient_ConnectedToServer()
+        {
+            Invoke(new PipeClient.ConnectedToServerHandler(ConnectedToServer));
         }
 
         private void pipeClient_MessageRecieved(byte[] message)
@@ -48,12 +56,14 @@ namespace LoginClient
             ASCIIEncoding encoder = new ASCIIEncoding();
             string str = encoder.GetString(message, 0, message.Length);
 
-            if (str == "close")
+            if (str == "close" || str == "Username or password incorrect.")
             {
+                MessageLogTB.Text += str + "\r\n";
+
                 pipeClient.Disconnect();
 
                 CreateNewPipeClient();
-                pipeClient.Connect(PipeNameTB.Text);
+                //pipeClient.Connect(PipeNameTB.Text);
             }
 
             MessageLogTB.Text += str + "\r\n";
@@ -61,22 +71,42 @@ namespace LoginClient
 
         private void pipeClient_ServerDisconnected()
         {
-            Invoke(new PipeClient.ServerDisconnectedHandler(EnableStartButton));
+            Invoke(new PipeClient.ServerDisconnectedHandler(NeedToConnect));
         }
-         private void EnableStartButton()
+
+         private void NeedToConnect()
         {
             ConnectBtn.Enabled = true;
+            DisconnectBtn.Enabled = false;
+
+            SendBtn.Enabled = false;
+            SendMessageTB.Enabled = false;
+            ClearBtn.Enabled = false;
+
+            AdminUsernameTB.Focus();
+        }
+
+        private void ConnectedToServer()
+        {
+            ConnectBtn.Enabled = false;
+            DisconnectBtn.Enabled = true;
+
+            SendBtn.Enabled = true;
+            SendMessageTB.Enabled = true;
+            ClearBtn.Enabled = true;
+
+            SendMessageTB.Focus();
         }
 
         private void ConnectBtn_Click(object sender, EventArgs e)
         {
-            if (AdminUsernameTB.Text != "" && AdminPasswordTB.Text != "")
+            if (!(String.IsNullOrWhiteSpace(AdminUsernameTB.Text)
+                && String.IsNullOrWhiteSpace(AdminPasswordTB.Text)))
             {
                 pipeClient.Connect(PipeNameTB.Text);
 
                 if (pipeClient.IsConnected())
                 {
-                    ConnectBtn.Enabled = false;
                     ValidateAdminDetails(AdminUsernameTB.Text, AdminPasswordTB.Text);
                 }
 
@@ -108,7 +138,14 @@ namespace LoginClient
         private void DisconnectBtn_Click(object sender, EventArgs e)
         {
             pipeClient.Disconnect();
-            EnableStartButton();
+            //NeedToConnect();
+            CreateNewPipeClient();
+        }
+
+        private void ClearBtn_Click(object sender, EventArgs e)
+        {
+            MessageLogTB.Clear();
+            SendMessageTB.Focus();
         }
     }
 }

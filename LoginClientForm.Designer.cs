@@ -155,6 +155,7 @@ namespace LoginClient
             this.ClearBtn.TabIndex = 14;
             this.ClearBtn.Text = "Clear";
             this.ClearBtn.UseVisualStyleBackColor = true;
+            this.ClearBtn.Click += new System.EventHandler(this.ClearBtn_Click);
             // 
             // SendBtn
             // 

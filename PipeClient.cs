@@ -47,6 +47,16 @@ namespace LoginClient
         /// </summary>
         public event ServerDisconnectedHandler ServerDisconnected;
 
+        /// <summary>
+        /// Handles the client connected to the server message.
+        /// </summary>
+        public delegate void ConnectedToServerHandler();
+
+        /// <summary>
+        /// The event that is called when the client connects to the server.
+        /// </summary>
+        public event ConnectedToServerHandler ConnectedToServer;
+
         const int BUFFER_SIZE = 4096;
 
         FileStream stream;
@@ -78,6 +88,11 @@ namespace LoginClient
         private void IsAdmin(bool isAdminOrNot)
         {
             isAdmin = isAdminOrNot;
+
+            if (isAdmin)
+            {
+                ConnectedToServer();
+            }
         }
 
         /// <summary>
@@ -117,6 +132,8 @@ namespace LoginClient
         }
 
         #endregion
+
+        #region Connection
 
         /// <summary>
         /// Disconnects the client from the server.
@@ -176,8 +193,6 @@ namespace LoginClient
                 return;
             }
 
-
-
             IsConnected(true);
 
             // Start listening for messages.
@@ -187,9 +202,10 @@ namespace LoginClient
             };
             readThread.Start();
 
-            
-
+            Console.WriteLine("Connect done.");
         }
+
+        #endregion
 
         private void ValidationResult(byte[] result)
         {
@@ -199,6 +215,7 @@ namespace LoginClient
             if (str.Equals("You are now logged in."))
             {
                 IsAdmin(true);
+                IsConnected(true);
             }
             else
             {
@@ -218,15 +235,23 @@ namespace LoginClient
             stream = new FileStream(handle, FileAccess.ReadWrite, BUFFER_SIZE, true);
             byte[] readBuffer = new byte[BUFFER_SIZE];
 
+            Console.WriteLine("Read Started.");
+
             while (true)
             {
                 int bytesRead = 0;
                 using (MemoryStream ms = new MemoryStream())
                 {
+                    Console.WriteLine("Read Started.1");
                     try
                     {
+                        Console.WriteLine("Read Started.2");
                         // Read the total stream length.
                         int totalSize = stream.Read(readBuffer, 0, 4);
+
+                        Console.WriteLine("Read Started.2.5");
+                        Console.WriteLine(IsConnected());
+                        Console.WriteLine(totalSize);
 
                         // client had disconnected.
                         if (totalSize == 0)
@@ -235,6 +260,8 @@ namespace LoginClient
                         }
 
                         totalSize = BitConverter.ToInt32(readBuffer, 0);
+
+                        Console.WriteLine("Read Started.3");
 
                         do
                         {
@@ -245,7 +272,7 @@ namespace LoginClient
                             bytesRead += numBytes;
 
                         } while (bytesRead < totalSize);
-
+                        Console.WriteLine("Read Started.4");
                     }
                     catch
                     {
@@ -261,6 +288,7 @@ namespace LoginClient
                     // Call message recieved event.
                     if(MessageRecieved != null)
                     {
+                        Console.WriteLine("Received a message.");
                         MessageRecieved(ms.ToArray());
 
                         if (!IsAdmin())
@@ -271,12 +299,13 @@ namespace LoginClient
                     }
                 }
             }
+            Console.WriteLine("Disconnected for unknown reasons.");
 
             // If disconnected then the disconnection was caused by the server
             // being terminated.
             if (IsConnected())
             {
-
+                Console.WriteLine("Disconnected because of server.");
                 // Clean up the resources.
                 stream.Close();
                 handle.Close();
@@ -285,6 +314,7 @@ namespace LoginClient
                 handle = null;
 
                 // Client no longer conected to the server.
+                IsAdmin(false);
                 IsConnected(false);
                 SetPipeName(null);
 
