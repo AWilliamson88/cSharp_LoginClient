@@ -150,6 +150,9 @@ namespace LoginClient
             SetPipeName(null);
             IsAdmin(false);
 
+            Console.WriteLine("Aborting Thread.");
+            readThread.Abort();
+
             // Clean up the resources
             if (stream != null)
             {
@@ -193,6 +196,10 @@ namespace LoginClient
                 return;
             }
 
+            Console.WriteLine("Connect => CurrentThread id: " + Thread.CurrentThread.ManagedThreadId);
+
+            stream = new FileStream(handle, FileAccess.ReadWrite, BUFFER_SIZE, true);
+
             IsConnected(true);
 
             // Start listening for messages.
@@ -202,6 +209,8 @@ namespace LoginClient
             };
             readThread.Start();
 
+            Console.WriteLine("Connect => CurrentThread id: " + Thread.CurrentThread.ManagedThreadId);
+            Console.WriteLine("Connect => ReadThread id: " + readThread.ManagedThreadId);
             Console.WriteLine("Connect done.");
         }
 
@@ -232,10 +241,14 @@ namespace LoginClient
         /// </summary>
         public void Read()
         {
-            stream = new FileStream(handle, FileAccess.ReadWrite, BUFFER_SIZE, true);
+            
             byte[] readBuffer = new byte[BUFFER_SIZE];
 
             Console.WriteLine("Read Started.");
+            Console.WriteLine("Read => CurrentThread id: " + Thread.CurrentThread.ManagedThreadId);
+            Console.WriteLine("Read => ReadThread id: " + readThread.ManagedThreadId);
+            Console.WriteLine("Read => ReadThread id: " + stream.Name);
+            Console.WriteLine("Read => ReadThread id: " + stream.SafeFileHandle);
 
             while (true)
             {
@@ -288,6 +301,9 @@ namespace LoginClient
                     // Call message recieved event.
                     if(MessageRecieved != null)
                     {
+                        Console.WriteLine("MessageRecieved => CurrentThread id: " + Thread.CurrentThread.ManagedThreadId);
+                        Console.WriteLine("MessageRecieved => ReadThread id: " + readThread.ManagedThreadId);
+
                         Console.WriteLine("Received a message.");
                         MessageRecieved(ms.ToArray());
 
@@ -336,6 +352,9 @@ namespace LoginClient
         {
             try
             {
+                Console.WriteLine("SendMessage => CurrentThread id: " + Thread.CurrentThread.ManagedThreadId);
+                Console.WriteLine("SendMessage => ReadThread id: " + readThread.ManagedThreadId);
+
                 // Write the entire stream length.
                 stream.Write(BitConverter.GetBytes(message.Length), 0, 4);
 

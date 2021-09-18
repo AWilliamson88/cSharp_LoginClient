@@ -56,7 +56,7 @@ namespace LoginClient
             ASCIIEncoding encoder = new ASCIIEncoding();
             string str = encoder.GetString(message, 0, message.Length);
 
-            if (str == "close" || str == "Username or password incorrect.")
+            if (str == "close") //|| str == "Username or password incorrect.")
             {
                 MessageLogTB.Text += str + "\r\n";
 
@@ -138,7 +138,7 @@ namespace LoginClient
         private void DisconnectBtn_Click(object sender, EventArgs e)
         {
             pipeClient.Disconnect();
-            //NeedToConnect();
+            NeedToConnect();
             CreateNewPipeClient();
         }
 
