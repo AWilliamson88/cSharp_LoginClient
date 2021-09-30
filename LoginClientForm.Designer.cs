@@ -29,7 +29,6 @@ namespace LoginClient
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.GroupBox AdminDetailsGP;
             this.AdminPasswordLabel = new System.Windows.Forms.Label();
             this.AdminUsernameLabel = new System.Windows.Forms.Label();
             this.AdminUsernameTB = new System.Windows.Forms.TextBox();
@@ -44,61 +43,47 @@ namespace LoginClient
             this.MessageLogLabel = new System.Windows.Forms.Label();
             this.ConnectBtn = new System.Windows.Forms.Button();
             this.DisconnectBtn = new System.Windows.Forms.Button();
-            AdminDetailsGP = new System.Windows.Forms.GroupBox();
-            AdminDetailsGP.SuspendLayout();
+            this.LoginBtn = new System.Windows.Forms.Button();
             this.SuspendLayout();
-            // 
-            // AdminDetailsGP
-            // 
-            AdminDetailsGP.Controls.Add(this.AdminPasswordLabel);
-            AdminDetailsGP.Controls.Add(this.AdminUsernameLabel);
-            AdminDetailsGP.Controls.Add(this.AdminUsernameTB);
-            AdminDetailsGP.Controls.Add(this.AdminPasswordTB);
-            AdminDetailsGP.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            AdminDetailsGP.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            AdminDetailsGP.Location = new System.Drawing.Point(218, 84);
-            AdminDetailsGP.Margin = new System.Windows.Forms.Padding(4);
-            AdminDetailsGP.Name = "AdminDetailsGP";
-            AdminDetailsGP.Padding = new System.Windows.Forms.Padding(4);
-            AdminDetailsGP.Size = new System.Drawing.Size(315, 88);
-            AdminDetailsGP.TabIndex = 18;
-            AdminDetailsGP.TabStop = false;
-            AdminDetailsGP.Text = "Admin Account";
             // 
             // AdminPasswordLabel
             // 
             this.AdminPasswordLabel.AutoSize = true;
-            this.AdminPasswordLabel.Location = new System.Drawing.Point(161, 27);
+            this.AdminPasswordLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.AdminPasswordLabel.Location = new System.Drawing.Point(400, 127);
             this.AdminPasswordLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.AdminPasswordLabel.Name = "AdminPasswordLabel";
-            this.AdminPasswordLabel.Size = new System.Drawing.Size(73, 17);
+            this.AdminPasswordLabel.Size = new System.Drawing.Size(82, 20);
             this.AdminPasswordLabel.TabIndex = 12;
             this.AdminPasswordLabel.Text = "Password:";
             // 
             // AdminUsernameLabel
             // 
             this.AdminUsernameLabel.AutoSize = true;
-            this.AdminUsernameLabel.Location = new System.Drawing.Point(20, 27);
+            this.AdminUsernameLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.AdminUsernameLabel.Location = new System.Drawing.Point(259, 127);
             this.AdminUsernameLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.AdminUsernameLabel.Name = "AdminUsernameLabel";
-            this.AdminUsernameLabel.Size = new System.Drawing.Size(77, 17);
+            this.AdminUsernameLabel.Size = new System.Drawing.Size(87, 20);
             this.AdminUsernameLabel.TabIndex = 11;
             this.AdminUsernameLabel.Text = "Username:";
             // 
             // AdminUsernameTB
             // 
-            this.AdminUsernameTB.Location = new System.Drawing.Point(20, 50);
+            this.AdminUsernameTB.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.AdminUsernameTB.Location = new System.Drawing.Point(259, 150);
             this.AdminUsernameTB.Margin = new System.Windows.Forms.Padding(4);
             this.AdminUsernameTB.Name = "AdminUsernameTB";
-            this.AdminUsernameTB.Size = new System.Drawing.Size(132, 23);
+            this.AdminUsernameTB.Size = new System.Drawing.Size(132, 26);
             this.AdminUsernameTB.TabIndex = 9;
             // 
             // AdminPasswordTB
             // 
-            this.AdminPasswordTB.Location = new System.Drawing.Point(161, 50);
+            this.AdminPasswordTB.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.AdminPasswordTB.Location = new System.Drawing.Point(400, 150);
             this.AdminPasswordTB.Margin = new System.Windows.Forms.Padding(4);
             this.AdminPasswordTB.Name = "AdminPasswordTB";
-            this.AdminPasswordTB.Size = new System.Drawing.Size(132, 23);
+            this.AdminPasswordTB.Size = new System.Drawing.Size(132, 26);
             this.AdminPasswordTB.TabIndex = 10;
             // 
             // MessageLogTB
@@ -205,7 +190,7 @@ namespace LoginClient
             // DisconnectBtn
             // 
             this.DisconnectBtn.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.DisconnectBtn.Location = new System.Drawing.Point(13, 102);
+            this.DisconnectBtn.Location = new System.Drawing.Point(241, 59);
             this.DisconnectBtn.Name = "DisconnectBtn";
             this.DisconnectBtn.Size = new System.Drawing.Size(91, 26);
             this.DisconnectBtn.TabIndex = 21;
@@ -213,15 +198,30 @@ namespace LoginClient
             this.DisconnectBtn.UseVisualStyleBackColor = true;
             this.DisconnectBtn.Click += new System.EventHandler(this.DisconnectBtn_Click);
             // 
+            // LoginBtn
+            // 
+            this.LoginBtn.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.LoginBtn.Location = new System.Drawing.Point(120, 59);
+            this.LoginBtn.Name = "LoginBtn";
+            this.LoginBtn.Size = new System.Drawing.Size(91, 26);
+            this.LoginBtn.TabIndex = 22;
+            this.LoginBtn.Text = "Login";
+            this.LoginBtn.UseVisualStyleBackColor = true;
+            this.LoginBtn.Click += new System.EventHandler(this.LoginBtn_Click);
+            // 
             // LoginClientForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(548, 676);
+            this.Controls.Add(this.AdminPasswordLabel);
+            this.Controls.Add(this.AdminUsernameLabel);
+            this.Controls.Add(this.LoginBtn);
+            this.Controls.Add(this.AdminUsernameTB);
             this.Controls.Add(this.DisconnectBtn);
+            this.Controls.Add(this.AdminPasswordTB);
             this.Controls.Add(this.ConnectBtn);
             this.Controls.Add(this.MessageLogLabel);
-            this.Controls.Add(AdminDetailsGP);
             this.Controls.Add(this.SendMessageLabel);
             this.Controls.Add(this.PipeNameLabel);
             this.Controls.Add(this.PipeNameTB);
@@ -232,8 +232,6 @@ namespace LoginClient
             this.Name = "LoginClientForm";
             this.Text = "Client";
             this.Load += new System.EventHandler(this.LoginClientForm_Load);
-            AdminDetailsGP.ResumeLayout(false);
-            AdminDetailsGP.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -255,6 +253,7 @@ namespace LoginClient
         private System.Windows.Forms.Label MessageLogLabel;
         private System.Windows.Forms.Button ConnectBtn;
         private System.Windows.Forms.Button DisconnectBtn;
+        private System.Windows.Forms.Button LoginBtn;
     }
 }
 

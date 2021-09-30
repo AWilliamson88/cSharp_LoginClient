@@ -19,12 +19,21 @@ namespace LoginClient
             InitializeComponent();
         }
 
+        /// <summary>
+        /// This method sets up the program when it first loads.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void LoginClientForm_Load(object sender, EventArgs e)
         {
             CreateNewPipeClient();
-            NeedToConnect();
+            UpdateFormButtons();
+            LoginBtn.Enabled = false;
         }
 
+        /// <summary>
+        /// Create a new pipeClient and set all the handlers for the delegates.
+        /// </summary>
         private void CreateNewPipeClient()
         {
             if (pipeClient != null)
@@ -40,9 +49,14 @@ namespace LoginClient
             pipeClient.ConnectedToServer += pipeClient_ConnectedToServer;
         }
 
+        /// <summary>
+        /// Methods to allow the pipeClient to use the methods on the form.
+        /// </summary>
+        #region HandlerMethods
+
         private void pipeClient_ConnectedToServer()
         {
-            Invoke(new PipeClient.ConnectedToServerHandler(ConnectedToServer));
+            Invoke(new PipeClient.ConnectedToServerHandler(UpdateFormButtons));
         }
 
         private void pipeClient_MessageRecieved(byte[] message)
@@ -51,101 +65,141 @@ namespace LoginClient
                 new object[] { message });
         }
 
+        private void pipeClient_ServerDisconnected()
+        {
+            Invoke(new PipeClient.ServerDisconnectedHandler(UpdateFormButtons));
+        }
+        #endregion
+
+        /// <summary>
+        /// Add the message onto a newline of the message log.
+        /// </summary>
+        /// <param name="message"></param>
         private void DisplayRecievedMessage(byte[] message)
         {
             ASCIIEncoding encoder = new ASCIIEncoding();
             string str = encoder.GetString(message, 0, message.Length);
 
-            if (str == "close") //|| str == "Username or password incorrect.")
+            if (str == "close")
             {
                 MessageLogTB.Text += str + "\r\n";
-
                 pipeClient.Disconnect();
-
                 CreateNewPipeClient();
-                //pipeClient.Connect(PipeNameTB.Text);
             }
-
             MessageLogTB.Text += str + "\r\n";
         }
 
-        private void pipeClient_ServerDisconnected()
+        /// <summary>
+        /// Update the enabled property of the buttons on the form.
+        /// Then resets the focus.
+        /// </summary>
+        private void UpdateFormButtons()
         {
-            Invoke(new PipeClient.ServerDisconnectedHandler(NeedToConnect));
+            bool connected = pipeClient.IsConnected();
+            bool loggedIn = pipeClient.IsLoggedIn();
+
+            ConnectBtn.Enabled = !connected;
+            DisconnectBtn.Enabled = connected;
+
+            LoginBtn.Enabled = !loggedIn;
+            SendBtn.Enabled = loggedIn;
+            SendMessageTB.Enabled = loggedIn;
+            ClearBtn.Enabled = loggedIn;
+
+            if (!connected)
+            {
+                ConnectBtn.Focus();
+            }
+            else if (!loggedIn)
+            {
+                AdminUsernameTB.Focus();
+            }
+            else
+            {
+                SendMessageTB.Focus();
+            }
         }
 
-         private void NeedToConnect()
-        {
-            ConnectBtn.Enabled = true;
-            DisconnectBtn.Enabled = false;
+        
+        #region ButtonClickMethods
 
-            SendBtn.Enabled = false;
-            SendMessageTB.Enabled = false;
-            ClearBtn.Enabled = false;
-
-            AdminUsernameTB.Focus();
-        }
-
-        private void ConnectedToServer()
-        {
-            ConnectBtn.Enabled = false;
-            DisconnectBtn.Enabled = true;
-
-            SendBtn.Enabled = true;
-            SendMessageTB.Enabled = true;
-            ClearBtn.Enabled = true;
-
-            SendMessageTB.Focus();
-        }
-
+        /// <summary>
+        /// Attempts to connect to the server.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ConnectBtn_Click(object sender, EventArgs e)
         {
-            if (!(String.IsNullOrWhiteSpace(AdminUsernameTB.Text)
-                && String.IsNullOrWhiteSpace(AdminPasswordTB.Text)))
-            {
-                pipeClient.Connect(PipeNameTB.Text);
+            pipeClient.Connect(PipeNameTB.Text);
 
-                if (pipeClient.IsConnected())
-                {
-                    ValidateAdminDetails(AdminUsernameTB.Text, AdminPasswordTB.Text);
-                }
-
-            } else
-            {
-                MessageBox.Show("Connection requires the admin username and password.", "Login Error");
-            }
-            
+            UpdateFormButtons();
         }
 
-        private void ValidateAdminDetails(string adminUsername, string adminPassword)
-        {
-            string adminDetails = adminUsername + ',' + adminPassword;
-            ASCIIEncoding encoder = new ASCIIEncoding();
-
-            pipeClient.SendMessage(encoder.GetBytes(adminDetails));
-
-
-        }
-
+        /// <summary>
+        /// Sends the user text to the server and clears the send message box.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void SendBtn_Click(object sender, EventArgs e)
         {
             ASCIIEncoding encoder = new ASCIIEncoding();
 
-            pipeClient.SendMessage(encoder.GetBytes(SendMessageTB.Text));
-            SendMessageTB.Clear();
+            if (!String.IsNullOrWhiteSpace(SendMessageTB.Text))
+            {
+                pipeClient.SendMessage(encoder.GetBytes(SendMessageTB.Text));
+                SendMessageTB.Clear();
+            }
         }
 
+        /// <summary>
+        /// When the disconnect button is clicked the pipeclient is dicconected, 
+        /// the form is updated and a new pipeclient is created.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void DisconnectBtn_Click(object sender, EventArgs e)
         {
             pipeClient.Disconnect();
-            NeedToConnect();
+            UpdateFormButtons();
             CreateNewPipeClient();
         }
 
+        /// <summary>
+        /// Clears the Message log and focuses onto the send box.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ClearBtn_Click(object sender, EventArgs e)
         {
             MessageLogTB.Clear();
             SendMessageTB.Focus();
         }
+
+        /// <summary>
+        /// The method called when the Login button is called.
+        /// If the username and password text boxes are filled out they are sent to the server.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void LoginBtn_Click(object sender, EventArgs e)
+        {
+            if (!(String.IsNullOrWhiteSpace(AdminUsernameTB.Text)
+                && String.IsNullOrWhiteSpace(AdminPasswordTB.Text)))
+            {
+                //pipeClient.Connect(PipeNameTB.Text);
+                //ValidateAdminDetails(AdminUsernameTB.Text, AdminPasswordTB.Text);
+
+                string adminDetails = AdminUsernameTB.Text + ',' + AdminPasswordTB.Text;
+                ASCIIEncoding encoder = new ASCIIEncoding();
+
+                pipeClient.SendMessage(encoder.GetBytes(adminDetails));
+            }
+            else
+            {
+                MessageBox.Show("Connection requires the admin username and password.", "Login Error");
+            }
+        }
+
+        #endregion
     }
 }

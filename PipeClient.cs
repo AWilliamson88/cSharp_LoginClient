@@ -76,20 +76,25 @@ namespace LoginClient
         /// <summary>
         /// Is the client logged in as the admin.
         /// </summary>
-        private bool isAdmin;
+        private bool isLoggedIn;
 
+        /// <summary>
+        /// The methods for accessing the 
+        /// connected, pipename, and isLoggedOn properties.
+        /// </summary>
+        /// <returns></returns>
         #region Accessors
 
-        private bool IsAdmin()
+        public bool IsLoggedIn()
         {
-            return isAdmin;
+            return isLoggedIn;
         }
 
-        private void IsAdmin(bool isAdminOrNot)
+        private void IsLoggedIn(bool isLoggedInOrNot)
         {
-            isAdmin = isAdminOrNot;
+            isLoggedIn = isLoggedInOrNot;
 
-            if (isAdmin)
+            if (isLoggedIn)
             {
                 ConnectedToServer();
             }
@@ -133,6 +138,7 @@ namespace LoginClient
 
         #endregion
 
+
         #region Connection
 
         /// <summary>
@@ -148,9 +154,8 @@ namespace LoginClient
             // We're no longer connected to the server.
             IsConnected(false);
             SetPipeName(null);
-            IsAdmin(false);
+            IsLoggedIn(false);
 
-            Console.WriteLine("Aborting Thread.");
             readThread.Abort();
 
             // Clean up the resources
@@ -196,8 +201,6 @@ namespace LoginClient
                 return;
             }
 
-            Console.WriteLine("Connect => CurrentThread id: " + Thread.CurrentThread.ManagedThreadId);
-
             stream = new FileStream(handle, FileAccess.ReadWrite, BUFFER_SIZE, true);
 
             IsConnected(true);
@@ -208,14 +211,13 @@ namespace LoginClient
                 IsBackground = true
             };
             readThread.Start();
-
-            Console.WriteLine("Connect => CurrentThread id: " + Thread.CurrentThread.ManagedThreadId);
-            Console.WriteLine("Connect => ReadThread id: " + readThread.ManagedThreadId);
-            Console.WriteLine("Connect done.");
         }
 
         #endregion
-
+        /// <summary>
+        /// Takes the byte[] from the server and checks the login attempt was successful.
+        /// </summary>
+        /// <param name="result">Byte[] </param>
         private void ValidationResult(byte[] result)
         {
             ASCIIEncoding encoder = new ASCIIEncoding();
@@ -223,16 +225,7 @@ namespace LoginClient
 
             if (str.Equals("You are now logged in."))
             {
-                IsAdmin(true);
-                IsConnected(true);
-            }
-            else
-            {
-                Disconnect();
-                ServerDisconnected();
-                MessageBox.Show("Username or password incorrect.\n" +
-                    "Please check your spelling and try again.", 
-                    "Login Failure");
+                IsLoggedIn(true);
             }
         }
 
@@ -241,30 +234,17 @@ namespace LoginClient
         /// </summary>
         public void Read()
         {
-            
             byte[] readBuffer = new byte[BUFFER_SIZE];
-
-            Console.WriteLine("Read Started.");
-            Console.WriteLine("Read => CurrentThread id: " + Thread.CurrentThread.ManagedThreadId);
-            Console.WriteLine("Read => ReadThread id: " + readThread.ManagedThreadId);
-            Console.WriteLine("Read => ReadThread id: " + stream.Name);
-            Console.WriteLine("Read => ReadThread id: " + stream.SafeFileHandle);
 
             while (true)
             {
                 int bytesRead = 0;
                 using (MemoryStream ms = new MemoryStream())
                 {
-                    Console.WriteLine("Read Started.1");
                     try
                     {
-                        Console.WriteLine("Read Started.2");
                         // Read the total stream length.
                         int totalSize = stream.Read(readBuffer, 0, 4);
-
-                        Console.WriteLine("Read Started.2.5");
-                        Console.WriteLine(IsConnected());
-                        Console.WriteLine(totalSize);
 
                         // client had disconnected.
                         if (totalSize == 0)
@@ -273,8 +253,6 @@ namespace LoginClient
                         }
 
                         totalSize = BitConverter.ToInt32(readBuffer, 0);
-
-                        Console.WriteLine("Read Started.3");
 
                         do
                         {
@@ -285,7 +263,6 @@ namespace LoginClient
                             bytesRead += numBytes;
 
                         } while (bytesRead < totalSize);
-                        Console.WriteLine("Read Started.4");
                     }
                     catch
                     {
@@ -301,13 +278,9 @@ namespace LoginClient
                     // Call message recieved event.
                     if(MessageRecieved != null)
                     {
-                        Console.WriteLine("MessageRecieved => CurrentThread id: " + Thread.CurrentThread.ManagedThreadId);
-                        Console.WriteLine("MessageRecieved => ReadThread id: " + readThread.ManagedThreadId);
-
-                        Console.WriteLine("Received a message.");
                         MessageRecieved(ms.ToArray());
 
-                        if (!IsAdmin())
+                        if (!IsLoggedIn())
                         {
                             ValidationResult(ms.ToArray());
                         }
@@ -315,13 +288,11 @@ namespace LoginClient
                     }
                 }
             }
-            Console.WriteLine("Disconnected for unknown reasons.");
 
             // If disconnected then the disconnection was caused by the server
             // being terminated.
             if (IsConnected())
             {
-                Console.WriteLine("Disconnected because of server.");
                 // Clean up the resources.
                 stream.Close();
                 handle.Close();
@@ -330,7 +301,7 @@ namespace LoginClient
                 handle = null;
 
                 // Client no longer conected to the server.
-                IsAdmin(false);
+                IsLoggedIn(false);
                 IsConnected(false);
                 SetPipeName(null);
 
@@ -348,27 +319,20 @@ namespace LoginClient
         /// </summary>
         /// <param name="message"></param>
         /// <returns></returns>
-        public bool SendMessage(byte[] message)
+        public void SendMessage(byte[] message)
         {
             try
             {
-                Console.WriteLine("SendMessage => CurrentThread id: " + Thread.CurrentThread.ManagedThreadId);
-                Console.WriteLine("SendMessage => ReadThread id: " + readThread.ManagedThreadId);
-
                 // Write the entire stream length.
                 stream.Write(BitConverter.GetBytes(message.Length), 0, 4);
 
                 stream.Write(message, 0, message.Length);
                 stream.Flush();
-                return true;
             }
-            catch
+            catch (Exception e)
             {
-                return false;
+                MessageBox.Show("Failed to send the message.\n" + e, "Messaging Failure");
             }
         }
-
-
-
     }
 }
