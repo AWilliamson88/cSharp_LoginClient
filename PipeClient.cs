@@ -9,6 +9,20 @@ using System.Threading.Tasks;
 using System.Threading;
 using System.Windows.Forms;
 
+/// <summary>
+/// Author: Andrew Williamson
+/// Student ID: P113357
+/// 
+/// AT 2 - Question 4 
+/// 
+/// JMC wishes to have a standard login functionality for all their 
+/// terminals around the ship, this should be accomplished via logging 
+/// into a central server to test user and password combinations 
+/// (you must have at least one administrator password setup)
+/// You must create a Server Client program it must use IPC to communicate.
+/// Your program must have a login that uses standard hashing techniques.
+/// 
+/// </summary>
 namespace LoginClient
 {
     /// <summary>
@@ -279,12 +293,17 @@ namespace LoginClient
                     if(MessageRecieved != null)
                     {
                         MessageRecieved(ms.ToArray());
+                        Console.Out.WriteLine(ms.ToArray());
+                        Console.Out.WriteLine(Thread.CurrentThread.ManagedThreadId + " in read()");
 
                         if (!IsLoggedIn())
                         {
+                            Console.Out.WriteLine();
+                            Console.Out.WriteLine("Begin validation.");
                             ValidationResult(ms.ToArray());
+                            Console.Out.WriteLine("Validation has ended");
+                            Console.Out.WriteLine();
                         }
-
                     }
                 }
             }
@@ -321,10 +340,21 @@ namespace LoginClient
         /// <returns></returns>
         public void SendMessage(byte[] message)
         {
+            // Check what the two stream.write lines do.
+            ASCIIEncoding encoder = new ASCIIEncoding();
+            string str = encoder.GetString(message, 0, message.Length);
+            Console.Out.WriteLine();
+            Console.Out.WriteLine("The thread Sending the message is thread: " + Thread.CurrentThread.ManagedThreadId);
+            Console.Out.WriteLine("The message sent to the Send Message method is: \n" + str);
+            Console.Out.WriteLine();
+            Console.Out.WriteLine(BitConverter.GetBytes(message.Length));
+            Console.Out.WriteLine();
+
             try
             {
                 // Write the entire stream length.
                 stream.Write(BitConverter.GetBytes(message.Length), 0, 4);
+
 
                 stream.Write(message, 0, message.Length);
                 stream.Flush();

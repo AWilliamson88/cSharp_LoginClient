@@ -5,9 +5,24 @@ using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
+/// <summary>
+/// Author: Andrew Williamson
+/// Student ID: P113357
+/// 
+/// AT 2 - Question 4 
+/// 
+/// JMC wishes to have a standard login functionality for all their 
+/// terminals around the ship, this should be accomplished via logging 
+/// into a central server to test user and password combinations 
+/// (you must have at least one administrator password setup)
+/// You must create a Server Client program it must use IPC to communicate.
+/// Your program must have a login that uses standard hashing techniques.
+/// 
+/// </summary>
 namespace LoginClient
 {
     public partial class LoginClientForm : Form
@@ -27,8 +42,6 @@ namespace LoginClient
         private void LoginClientForm_Load(object sender, EventArgs e)
         {
             CreateNewPipeClient();
-            UpdateFormButtons();
-            LoginBtn.Enabled = false;
         }
 
         /// <summary>
@@ -47,6 +60,8 @@ namespace LoginClient
             pipeClient.MessageRecieved += pipeClient_MessageRecieved;
             pipeClient.ServerDisconnected += pipeClient_ServerDisconnected;
             pipeClient.ConnectedToServer += pipeClient_ConnectedToServer;
+
+            UpdateForm();
         }
 
         /// <summary>
@@ -56,7 +71,7 @@ namespace LoginClient
 
         private void pipeClient_ConnectedToServer()
         {
-            Invoke(new PipeClient.ConnectedToServerHandler(UpdateFormButtons));
+            Invoke(new PipeClient.ConnectedToServerHandler(UpdateForm));
         }
 
         private void pipeClient_MessageRecieved(byte[] message)
@@ -67,7 +82,7 @@ namespace LoginClient
 
         private void pipeClient_ServerDisconnected()
         {
-            Invoke(new PipeClient.ServerDisconnectedHandler(UpdateFormButtons));
+            Invoke(new PipeClient.ServerDisconnectedHandler(UpdateForm));
         }
         #endregion
 
@@ -77,12 +92,13 @@ namespace LoginClient
         /// <param name="message"></param>
         private void DisplayRecievedMessage(byte[] message)
         {
+            Console.WriteLine(Thread.CurrentThread.ManagedThreadId + "in DisplayRecievedMessage");
             ASCIIEncoding encoder = new ASCIIEncoding();
             string str = encoder.GetString(message, 0, message.Length);
 
             if (str == "close")
             {
-                MessageLogTB.Text += str + "\r\n";
+                //MessageLogTB.Text += str + "\r\n";
                 pipeClient.Disconnect();
                 CreateNewPipeClient();
             }
@@ -93,7 +109,7 @@ namespace LoginClient
         /// Update the enabled property of the buttons on the form.
         /// Then resets the focus.
         /// </summary>
-        private void UpdateFormButtons()
+        private void UpdateForm()
         {
             bool connected = pipeClient.IsConnected();
             bool loggedIn = pipeClient.IsLoggedIn();
@@ -101,22 +117,25 @@ namespace LoginClient
             ConnectBtn.Enabled = !connected;
             DisconnectBtn.Enabled = connected;
 
-            LoginBtn.Enabled = !loggedIn;
+            
             SendBtn.Enabled = loggedIn;
             SendMessageTB.Enabled = loggedIn;
             ClearBtn.Enabled = loggedIn;
 
-            if (!connected)
+            if (connected == false)
             {
                 ConnectBtn.Focus();
+                LoginBtn.Enabled = connected;
             }
-            else if (!loggedIn)
+            else if (loggedIn == false)
             {
                 AdminUsernameTB.Focus();
+                LoginBtn.Enabled = !loggedIn;
             }
             else
             {
                 SendMessageTB.Focus();
+                LoginBtn.Enabled = !loggedIn;
             }
         }
 
@@ -132,7 +151,8 @@ namespace LoginClient
         {
             pipeClient.Connect(PipeNameTB.Text);
 
-            UpdateFormButtons();
+            UpdateForm();
+
         }
 
         /// <summary>
@@ -160,8 +180,9 @@ namespace LoginClient
         private void DisconnectBtn_Click(object sender, EventArgs e)
         {
             pipeClient.Disconnect();
-            UpdateFormButtons();
             CreateNewPipeClient();
+            MessageLogTB.Text += "Disconnected from the server." + "\r\n";
+            UpdateForm();
         }
 
         /// <summary>
@@ -183,8 +204,7 @@ namespace LoginClient
         /// <param name="e"></param>
         private void LoginBtn_Click(object sender, EventArgs e)
         {
-            if (!(String.IsNullOrWhiteSpace(AdminUsernameTB.Text)
-                && String.IsNullOrWhiteSpace(AdminPasswordTB.Text)))
+            if (!string.IsNullOrWhiteSpace(AdminUsernameTB.Text) && !string.IsNullOrWhiteSpace(AdminPasswordTB.Text))
             {
                 //pipeClient.Connect(PipeNameTB.Text);
                 //ValidateAdminDetails(AdminUsernameTB.Text, AdminPasswordTB.Text);
@@ -196,10 +216,15 @@ namespace LoginClient
             }
             else
             {
-                MessageBox.Show("Connection requires the admin username and password.", "Login Error");
+                MessageBox.Show("Connection requires the both a username and password.", "Login Error");
             }
         }
 
         #endregion
+
+        private void LoginClientForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            pipeClient.Disconnect();
+        }
     }
 }

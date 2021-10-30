@@ -231,6 +231,7 @@ namespace LoginClient
             this.Controls.Add(this.MessageLogTB);
             this.Name = "LoginClientForm";
             this.Text = "Client";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.LoginClientForm_FormClosing);
             this.Load += new System.EventHandler(this.LoginClientForm_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
